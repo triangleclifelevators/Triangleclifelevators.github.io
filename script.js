@@ -1,5 +1,5 @@
-// script.js - Updated with FormSubmit Integration and Fixed Form Validation
-// Complete with proper form handling for both Quote and Contact forms
+// script.js - SIMPLIFIED VERSION - FormSubmit focused
+// Removed complex validation that was blocking FormSubmit
 
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -11,7 +11,7 @@ function initApp() {
     // Set current year in footer
     document.getElementById('currentYear').textContent = new Date().getFullYear();
     
-    // Set page URLs and timestamps for forms
+    // Set page URLs for forms
     setFormTrackingData();
     
     // Initialize loading screen
@@ -32,7 +32,7 @@ function initApp() {
     // Initialize progress bars
     initProgressBars();
     
-    // Initialize contact form
+    // Initialize contact form (SIMPLIFIED)
     initContactForm();
     
     // Initialize smooth scrolling for anchor links
@@ -47,11 +47,8 @@ function initApp() {
     // Initialize client logos
     initClientLogos();
     
-    // Initialize quote popup
+    // Initialize quote popup (SIMPLIFIED)
     initQuotePopup();
-    
-    // Initialize phone number formatting
-    initPhoneFormatting();
 }
 
 // Set form tracking data
@@ -72,7 +69,7 @@ function setFormTrackingData() {
     if (contactTimestamp) contactTimestamp.value = timestamp;
 }
 
-// Loading Screen
+// Loading Screen (UNCHANGED)
 function initLoadingScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     const progressFill = document.querySelector('.progress-fill-loading');
@@ -111,13 +108,12 @@ function initLoadingScreen() {
     }, 100);
 }
 
-// Initialize Quote Popup - FIXED VERSION
+// Initialize Quote Popup - SIMPLIFIED VERSION
 function initQuotePopup() {
     const quotePopup = document.getElementById('quotePopup');
     const popupOverlay = document.getElementById('popupOverlay');
     const popupClose = document.getElementById('popupClose');
     const quoteForm = document.getElementById('quoteForm');
-    const popupMessageDisplay = document.getElementById('popupMessageDisplay');
     
     // Get all quote buttons
     const quotePopupBtn = document.getElementById('quotePopupBtn');
@@ -142,13 +138,6 @@ function initQuotePopup() {
     function closeQuotePopup() {
         quotePopup.classList.remove('active');
         document.body.style.overflow = 'auto';
-        
-        // Clear any existing messages
-        if (popupMessageDisplay) {
-            popupMessageDisplay.textContent = '';
-            popupMessageDisplay.className = 'form-message';
-            popupMessageDisplay.style.display = 'none';
-        }
     }
     
     // Event listeners for opening popup
@@ -189,17 +178,18 @@ function initQuotePopup() {
         }
     });
     
-    // Form submission handling - FIXED VERSION
+    // Form submission handling - SIMPLIFIED
     if (quoteForm) {
         quoteForm.addEventListener('submit', function(e) {
-            // First, check if all required fields are filled
+            // SIMPLE VALIDATION ONLY - Don't block FormSubmit
+            
+            // Check required fields
             const requiredFields = quoteForm.querySelectorAll('[required]');
-            let allValid = true;
+            let hasEmptyFields = false;
             
             requiredFields.forEach(field => {
                 if (!field.value.trim()) {
-                    allValid = false;
-                    // Add visual feedback for empty required field
+                    hasEmptyFields = true;
                     field.style.borderColor = '#d32f2f';
                     setTimeout(() => {
                         field.style.borderColor = '';
@@ -207,79 +197,35 @@ function initQuotePopup() {
                 }
             });
             
-            if (!allValid) {
+            if (hasEmptyFields) {
                 e.preventDefault();
-                showPopupMessage('Please fill in all required fields marked with *', 'error');
+                showSimplePopupMessage('Please fill in all required fields (*)', 'error');
                 return;
             }
             
-            // Validate email format if email field exists
-            const emailField = document.getElementById('popupEmail');
-            if (emailField && emailField.value.trim()) {
-                const email = emailField.value.trim();
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
-                    e.preventDefault();
-                    showPopupMessage('Please enter a valid email address.', 'error');
-                    emailField.style.borderColor = '#d32f2f';
-                    setTimeout(() => {
-                        emailField.style.borderColor = '';
-                    }, 2000);
-                    return;
-                }
-            }
-            
-            // Validate phone number format - FIXED
-            const phoneField = document.getElementById('popupPhone');
-            if (phoneField && phoneField.value.trim()) {
-                const phone = phoneField.value.trim();
-                // Remove all non-digits
-                const cleanedPhone = phone.replace(/\D/g, '');
-                // Remove country code (91) if present and check for 10 digits
-                const digitsOnly = cleanedPhone.replace(/^91/, '');
-                if (digitsOnly.length !== 10) {
-                    e.preventDefault();
-                    showPopupMessage('Please enter a valid 10-digit phone number.', 'error');
-                    phoneField.style.borderColor = '#d32f2f';
-                    setTimeout(() => {
-                        phoneField.style.borderColor = '';
-                    }, 2000);
-                    return;
-                }
-            }
-            
-            // Check consent checkbox
+            // Check consent checkbox (if it exists)
             const consentCheckbox = document.getElementById('popupConsent');
             if (consentCheckbox && !consentCheckbox.checked) {
                 e.preventDefault();
-                showPopupMessage('Please agree to receive quotes and updates.', 'error');
+                showSimplePopupMessage('Please agree to receive quotes and updates', 'error');
                 return;
             }
             
-            // If all validations pass, show loading state
-            if (popupMessageDisplay) {
-                popupMessageDisplay.textContent = 'Submitting your request... Please wait.';
-                popupMessageDisplay.className = 'form-message';
-                popupMessageDisplay.style.display = 'block';
-                
-                // Scroll to message for better visibility
-                popupMessageDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            
-            // Disable submit button to prevent double submission
+            // If validation passes, let FormSubmit handle the rest
+            // Show loading state
             const submitBtn = quoteForm.querySelector('button[type="submit"]');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting...';
             }
             
-            // FormSubmit will handle the submission and redirect
-            // No need to prevent default if all validations pass
+            // Don't prevent default - let FormSubmit redirect to calculator.html
         });
     }
     
-    // Show popup message
-    function showPopupMessage(text, type) {
+    // Simple message display
+    function showSimplePopupMessage(text, type) {
+        const popupMessageDisplay = document.getElementById('popupMessageDisplay');
         if (!popupMessageDisplay) return;
         
         popupMessageDisplay.textContent = text;
@@ -289,57 +235,29 @@ function initQuotePopup() {
         // Scroll to message
         popupMessageDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        // Hide message after 5 seconds for errors
-        if (type === 'error') {
-            setTimeout(() => {
-                popupMessageDisplay.style.opacity = '0';
-                setTimeout(() => {
-                    popupMessageDisplay.style.opacity = '1';
-                    popupMessageDisplay.style.display = 'none';
-                }, 500);
-            }, 5000);
-        }
+        // Hide message after 3 seconds
+        setTimeout(() => {
+            popupMessageDisplay.style.display = 'none';
+        }, 3000);
     }
     
-    // Phone number formatting for popup - FIXED
+    // SIMPLIFIED Phone formatting - Just ensure +91 prefix
     const popupPhoneInput = document.getElementById('popupPhone');
     if (popupPhoneInput) {
-        // Set default value
-        if (!popupPhoneInput.value.trim() || popupPhoneInput.value === '+91 ') {
-            popupPhoneInput.value = '+91 ';
-        }
-        
-        popupPhoneInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            
-            if (value.length > 0) {
-                // If starts with 91, keep it, otherwise add +91
-                if (!value.startsWith('91')) {
-                    value = '91' + value;
-                }
-                // Keep only first 12 digits (91 + 10 digits)
-                value = value.substring(0, 12);
-                // Format with +91 prefix
-                const formatted = '+91 ' + value.substring(2);
-                e.target.value = formatted;
-            } else {
-                e.target.value = '+91 ';
-            }
-        });
-        
-        // Ensure format on blur
         popupPhoneInput.addEventListener('blur', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 0 && !value.startsWith('91')) {
-                value = '91' + value;
-                value = value.substring(0, 12);
-                e.target.value = '+91 ' + value.substring(2);
+            let value = e.target.value.trim();
+            if (value && !value.startsWith('+91')) {
+                // Keep only digits
+                const digits = value.replace(/\D/g, '');
+                if (digits.length >= 10) {
+                    e.target.value = '+91 ' + digits.substring(digits.length - 10);
+                }
             }
         });
     }
 }
 
-// Navigation
+// Navigation (UNCHANGED)
 function initNavigation() {
     const mobileToggle = document.getElementById('mobileToggle');
     const mainNav = document.getElementById('mainNav');
@@ -434,7 +352,34 @@ function initNavigation() {
     });
 }
 
-// Initialize dropdowns
+// Update active navigation link based on scroll position
+function updateActiveNavLink() {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    let currentSectionId = '';
+    const header = document.getElementById('mainHeader');
+    const headerHeight = header ? header.offsetHeight : 0;
+    
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        
+        if (window.scrollY >= sectionTop - headerHeight - 100 &&
+            window.scrollY < sectionTop + sectionHeight - headerHeight - 100) {
+            currentSectionId = section.getAttribute('id');
+        }
+    });
+    
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${currentSectionId}`) {
+            link.classList.add('active');
+        }
+    });
+}
+
+// Initialize dropdowns (UNCHANGED)
 function initDropdowns() {
     const specToggles = document.querySelectorAll('.spec-toggle');
     const featuresToggles = document.querySelectorAll('.features-toggle');
@@ -472,7 +417,7 @@ function initDropdowns() {
     });
 }
 
-// Product filtering
+// Product filtering (UNCHANGED)
 function initProductFilter() {
     const categoryBtns = document.querySelectorAll('.category-filter-btn');
     const productCards = document.querySelectorAll('.product-card');
@@ -507,7 +452,7 @@ function initProductFilter() {
     });
 }
 
-// Smooth scrolling for anchor links
+// Smooth scrolling for anchor links (UNCHANGED)
 function initSmoothScrolling() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         // Skip external links
@@ -536,34 +481,7 @@ function initSmoothScrolling() {
     });
 }
 
-// Update active navigation link based on scroll position
-function updateActiveNavLink() {
-    const sections = document.querySelectorAll('section[id]');
-    const navLinks = document.querySelectorAll('.nav-link');
-    
-    let currentSectionId = '';
-    const header = document.getElementById('mainHeader');
-    const headerHeight = header ? header.offsetHeight : 0;
-    
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        
-        if (window.scrollY >= sectionTop - headerHeight - 100 &&
-            window.scrollY < sectionTop + sectionHeight - headerHeight - 100) {
-            currentSectionId = section.getAttribute('id');
-        }
-    });
-    
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === `#${currentSectionId}`) {
-            link.classList.add('active');
-        }
-    });
-}
-
-// Scroll Animations
+// Scroll Animations (UNCHANGED)
 function initScrollAnimations() {
     const animateElements = document.querySelectorAll('.product-card, .feature-card, .service-card, .industry-card, .tech-item, .trust-card');
     
@@ -584,7 +502,7 @@ function initScrollAnimations() {
     });
 }
 
-// Trigger initial animations after loading
+// Trigger initial animations after loading (UNCHANGED)
 function triggerInitialAnimations() {
     const heroContent = document.querySelector('.hero-content');
     if (heroContent) {
@@ -596,7 +514,7 @@ function triggerInitialAnimations() {
     window.dispatchEvent(event);
 }
 
-// Initialize card animations
+// Initialize card animations (UNCHANGED)
 function initCardAnimations() {
     const cards = document.querySelectorAll('.product-card, .feature-card, .service-card, .industry-card, .trust-card');
     
@@ -605,7 +523,7 @@ function initCardAnimations() {
     });
 }
 
-// Progress Bars
+// Progress Bars (UNCHANGED)
 function initProgressBars() {
     const progressFills = document.querySelectorAll('.progress-fill');
     
@@ -628,7 +546,7 @@ function initProgressBars() {
     });
 }
 
-// Loading Messages
+// Loading Messages (UNCHANGED)
 function initLoadingMessages() {
     const messages = [
         { text: "🛗 Preparing a smooth ride for you…", icon: "fas fa-elevator" },
@@ -660,7 +578,7 @@ function initLoadingMessages() {
     });
 }
 
-// Start loading messages animation
+// Start loading messages animation (UNCHANGED)
 function startLoadingMessages() {
     const messagesTrack = document.getElementById('loadingMessagesTrack');
     if (messagesTrack) {
@@ -668,7 +586,7 @@ function startLoadingMessages() {
     }
 }
 
-// Initialize Client Logos
+// Initialize Client Logos (UNCHANGED)
 function initClientLogos() {
     const bangaloreCompanies = [
         "Prestige Group", "Brigade Group", "Sobha Limited", "Godrej Properties",
@@ -700,7 +618,7 @@ function initClientLogos() {
     });
 }
 
-// Start client logos animation
+// Start client logos animation (UNCHANGED)
 function startClientLogosAnimation() {
     const logosTrack = document.getElementById('clientLogosTrack');
     if (logosTrack) {
@@ -708,22 +626,22 @@ function startClientLogosAnimation() {
     }
 }
 
-// Contact Form - FIXED VERSION
+// Contact Form - SIMPLIFIED VERSION
 function initContactForm() {
     const contactForm = document.getElementById('contactForm');
-    const formMessage = document.getElementById('formMessage');
     
     if (!contactForm) return;
     
     contactForm.addEventListener('submit', function(e) {
-        // First, check if all required fields are filled
+        // SIMPLE VALIDATION ONLY
+        
+        // Check required fields
         const requiredFields = contactForm.querySelectorAll('[required]');
-        let allValid = true;
+        let hasEmptyFields = false;
         
         requiredFields.forEach(field => {
             if (!field.value.trim()) {
-                allValid = false;
-                // Add visual feedback for empty required field
+                hasEmptyFields = true;
                 field.style.borderColor = '#d32f2f';
                 setTimeout(() => {
                     field.style.borderColor = '';
@@ -731,214 +649,35 @@ function initContactForm() {
             }
         });
         
-        if (!allValid) {
+        if (hasEmptyFields) {
             e.preventDefault();
-            showContactFormMessage('Please fill in all required fields marked with *', 'error');
+            showSimpleContactMessage('Please fill in all required fields (*)', 'error');
             return;
         }
         
-        // Validate email format
-        const emailField = document.getElementById('email');
-        if (emailField && emailField.value.trim()) {
-            const email = emailField.value.trim();
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                e.preventDefault();
-                showContactFormMessage('Please enter a valid email address.', 'error');
-                emailField.style.borderColor = '#d32f2f';
-                setTimeout(() => {
-                    emailField.style.borderColor = '';
-                }, 2000);
-                return;
-            }
-        }
-        
-        // Validate phone number format - FIXED
-        const phoneField = document.getElementById('phone');
-        if (phoneField && phoneField.value.trim()) {
-            const phone = phoneField.value.trim();
-            // Remove all non-digits
-            const cleanedPhone = phone.replace(/\D/g, '');
-            // Remove country code (91) if present and check for 10 digits
-            const digitsOnly = cleanedPhone.replace(/^91/, '');
-            if (digitsOnly.length !== 10) {
-                e.preventDefault();
-                showContactFormMessage('Please enter a valid 10-digit phone number.', 'error');
-                phoneField.style.borderColor = '#d32f2f';
-                setTimeout(() => {
-                    phoneField.style.borderColor = '';
-                }, 2000);
-                return;
-            }
-        }
-        
-        // If all validations pass, show loading state
-        if (formMessage) {
-            formMessage.textContent = 'Sending your message... Please wait.';
-            formMessage.className = 'form-message';
-            formMessage.style.display = 'block';
-            
-            // Scroll to message for better visibility
-            formMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        
-        // Disable submit button to prevent double submission
+        // If validation passes, let FormSubmit handle the rest
+        // Show loading state
         const submitBtn = contactForm.querySelector('button[type="submit"]');
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
         }
         
-        // FormSubmit will handle the submission and redirect
-        // No need to prevent default if all validations pass
+        // Don't prevent default - let FormSubmit redirect to thank-you.html
     });
     
-    // Show contact form message
-    function showContactFormMessage(text, type) {
+    // Simple message display
+    function showSimpleContactMessage(text, type) {
+        const formMessage = document.getElementById('formMessage');
         if (!formMessage) return;
         
         formMessage.textContent = text;
         formMessage.className = `form-message ${type}`;
         formMessage.style.display = 'block';
         
-        // Hide message after 5 seconds for errors
-        if (type === 'error') {
-            setTimeout(() => {
-                formMessage.style.opacity = '0';
-                setTimeout(() => {
-                    formMessage.style.opacity = '1';
-                    formMessage.style.display = 'none';
-                }, 500);
-            }, 5000);
-        }
+        // Hide message after 3 seconds
+        setTimeout(() => {
+            formMessage.style.display = 'none';
+        }, 3000);
     }
 }
-
-// Phone number formatting for all phone inputs - FIXED VERSION
-function initPhoneFormatting() {
-    // Format phone input in contact form
-    const contactPhoneInput = document.getElementById('phone');
-    if (contactPhoneInput) {
-        // Set default value
-        if (!contactPhoneInput.value.trim() || contactPhoneInput.value === '+91 ') {
-            contactPhoneInput.value = '+91 ';
-        }
-        
-        contactPhoneInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            
-            if (value.length > 0) {
-                // If starts with 91, keep it, otherwise add +91
-                if (!value.startsWith('91')) {
-                    value = '91' + value;
-                }
-                // Keep only first 12 digits (91 + 10 digits)
-                value = value.substring(0, 12);
-                // Format with +91 prefix
-                const formatted = '+91 ' + value.substring(2);
-                e.target.value = formatted;
-            } else {
-                e.target.value = '+91 ';
-            }
-        });
-        
-        // Ensure format on blur
-        contactPhoneInput.addEventListener('blur', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 0 && !value.startsWith('91')) {
-                value = '91' + value;
-                value = value.substring(0, 12);
-                e.target.value = '+91 ' + value.substring(2);
-            }
-        });
-    }
-    
-    // Format popup phone input (already handled in initQuotePopup, but for safety)
-    const popupPhoneInput = document.getElementById('popupPhone');
-    if (popupPhoneInput && !popupPhoneInput.hasAttribute('data-formatted')) {
-        popupPhoneInput.setAttribute('data-formatted', 'true');
-        
-        // Set default value
-        if (!popupPhoneInput.value.trim() || popupPhoneInput.value === '+91 ') {
-            popupPhoneInput.value = '+91 ';
-        }
-        
-        popupPhoneInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            
-            if (value.length > 0) {
-                if (!value.startsWith('91')) {
-                    value = '91' + value;
-                }
-                value = value.substring(0, 12);
-                const formatted = '+91 ' + value.substring(2);
-                e.target.value = formatted;
-            } else {
-                e.target.value = '+91 ';
-            }
-        });
-    }
-    
-    // Format any other phone inputs that might exist
-    const otherPhoneInputs = document.querySelectorAll('input[type="tel"]:not(#popupPhone):not(#phone):not([data-formatted])');
-    otherPhoneInputs.forEach(input => {
-        input.setAttribute('data-formatted', 'true');
-        
-        // Set default value
-        if (!input.value.trim() || input.value === '+91 ') {
-            input.value = '+91 ';
-        }
-        
-        input.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            
-            if (value.length > 0) {
-                if (!value.startsWith('91')) {
-                    value = '91' + value;
-                }
-                value = value.substring(0, 12);
-                const formatted = '+91 ' + value.substring(2);
-                e.target.value = formatted;
-            } else {
-                e.target.value = '+91 ';
-            }
-        });
-    });
-}
-
-// Optional: Add a function to check if redirect pages exist (for development)
-function checkRedirectPages() {
-    // This function can be used to verify that calculator.html and thank-you.html exist
-    // You can call it during development to ensure the redirect will work
-    console.log('Checking redirect pages...');
-    
-    fetch('calculator.html')
-        .then(response => {
-            if (!response.ok) {
-                console.warn('⚠️ calculator.html not found. FormSubmit redirect will fail.');
-                console.warn('Please create calculator.html in the same directory as index.html');
-            } else {
-                console.log('✅ calculator.html found and accessible');
-            }
-        })
-        .catch(() => {
-            console.warn('⚠️ calculator.html not found. FormSubmit redirect will fail.');
-        });
-    
-    fetch('thank-you.html')
-        .then(response => {
-            if (!response.ok) {
-                console.warn('⚠️ thank-you.html not found. FormSubmit redirect will fail.');
-                console.warn('Please create thank-you.html in the same directory as index.html');
-            } else {
-                console.log('✅ thank-you.html found and accessible');
-            }
-        })
-        .catch(() => {
-            console.warn('⚠️ thank-you.html not found. FormSubmit redirect will fail.');
-        });
-}
-
-// Call this function during development to verify files exist
-// Uncomment the line below to check redirect pages on load
-// window.addEventListener('load', checkRedirectPages);
