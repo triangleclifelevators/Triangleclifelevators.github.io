@@ -1,47 +1,80 @@
-// script.js - UPDATED with FormSubmit-Compatible Validation
-// Fixed: Removes JS form submission handling that conflicts with FormSubmit
+// script.js - Updated with FormSubmit Integration
+// Fixed: Removed success handling to allow FormSubmit redirect
 
+// Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the application
     initApp();
 });
 
 function initApp() {
+    // Set current year in footer
     document.getElementById('currentYear').textContent = new Date().getFullYear();
+    
+    // Set page URLs and timestamps for forms
     setFormTrackingData();
+    
+    // Initialize loading screen
     initLoadingScreen();
+    
+    // Initialize navigation
     initNavigation();
+    
+    // Initialize dropdowns
     initDropdowns();
+    
+    // Initialize product filtering
     initProductFilter();
+    
+    // Initialize scroll animations
     initScrollAnimations();
+    
+    // Initialize progress bars
     initProgressBars();
+    
+    // Initialize contact form
     initContactForm();
+    
+    // Initialize smooth scrolling for anchor links
     initSmoothScrolling();
+    
+    // Initialize animations on cards
     initCardAnimations();
+    
+    // Initialize loading messages
     initLoadingMessages();
+    
+    // Initialize client logos
     initClientLogos();
+    
+    // Initialize quote popup
     initQuotePopup();
 }
 
+// Set form tracking data
 function setFormTrackingData() {
     const currentUrl = window.location.href;
     const timestamp = new Date().toISOString();
     
+    // Set for quote popup
     const pageUrlField = document.getElementById('pageUrl');
     const timestampField = document.getElementById('timestamp');
     if (pageUrlField) pageUrlField.value = currentUrl;
     if (timestampField) timestampField.value = timestamp;
     
+    // Set for contact form
     const contactPageUrl = document.getElementById('contactPageUrl');
     const contactTimestamp = document.getElementById('contactTimestamp');
     if (contactPageUrl) contactPageUrl.value = currentUrl;
     if (contactTimestamp) contactTimestamp.value = timestamp;
 }
 
-// Loading Screen - UNCHANGED
+// Loading Screen
 function initLoadingScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     const progressFill = document.querySelector('.progress-fill-loading');
     
+    // Simulate loading progress
     let progress = 0;
     const progressInterval = setInterval(() => {
         progress += Math.random() * 15;
@@ -49,75 +82,209 @@ function initLoadingScreen() {
             progress = 100;
             clearInterval(progressInterval);
             
+            // Hide loading screen after progress completes
             setTimeout(() => {
                 loadingScreen.style.opacity = '0';
                 loadingScreen.style.visibility = 'hidden';
+                
+                // Show main content
                 document.body.style.overflow = 'auto';
+                
+                // Trigger initial animations
                 triggerInitialAnimations();
+                
+                // Start loading messages animation
                 startLoadingMessages();
+                
+                // Start client logos animation
                 startClientLogosAnimation();
             }, 500);
         }
         
+        // Update progress bar width
         if (progressFill) {
             progressFill.style.width = `${progress}%`;
         }
     }, 100);
 }
 
-// ✅ FIXED: Quote Popup - FormSubmit Compatible
+// Initialize Quote Popup
 function initQuotePopup() {
     const quotePopup = document.getElementById('quotePopup');
     const popupOverlay = document.getElementById('popupOverlay');
     const popupClose = document.getElementById('popupClose');
     const quoteForm = document.getElementById('quoteForm');
+    const popupMessageDisplay = document.getElementById('popupMessageDisplay');
     
+    // Get all quote buttons
     const quotePopupBtn = document.getElementById('quotePopupBtn');
     const heroQuoteBtn = document.getElementById('heroQuoteBtn');
     const aboutQuoteBtn = document.getElementById('aboutQuoteBtn');
     const ctaQuoteBtn = document.getElementById('ctaQuoteBtn');
     const productQuoteBtns = document.querySelectorAll('.product-quote-btn');
     
-    // ✅ FIXED: Open popup only
+    // Open popup function
     function openQuotePopup() {
         quotePopup.classList.add('active');
         document.body.style.overflow = 'hidden';
         
+        // Focus on first input
         setTimeout(() => {
             document.getElementById('popupName').focus();
         }, 300);
     }
     
-    // ✅ FIXED: Close popup only
+    // Close popup function
     function closeQuotePopup() {
         quotePopup.classList.remove('active');
         document.body.style.overflow = 'auto';
+        
+        // Clear any existing messages
+        if (popupMessageDisplay) {
+            popupMessageDisplay.textContent = '';
+            popupMessageDisplay.className = 'form-message';
+            popupMessageDisplay.style.display = 'none';
+        }
     }
     
-    // Open popup event listeners
-    if (quotePopupBtn) quotePopupBtn.addEventListener('click', openQuotePopup);
-    if (heroQuoteBtn) heroQuoteBtn.addEventListener('click', openQuotePopup);
-    if (aboutQuoteBtn) aboutQuoteBtn.addEventListener('click', openQuotePopup);
-    if (ctaQuoteBtn) ctaQuoteBtn.addEventListener('click', openQuotePopup);
+    // Event listeners for opening popup
+    if (quotePopupBtn) {
+        quotePopupBtn.addEventListener('click', openQuotePopup);
+    }
     
+    if (heroQuoteBtn) {
+        heroQuoteBtn.addEventListener('click', openQuotePopup);
+    }
+    
+    if (aboutQuoteBtn) {
+        aboutQuoteBtn.addEventListener('click', openQuotePopup);
+    }
+    
+    if (ctaQuoteBtn) {
+        ctaQuoteBtn.addEventListener('click', openQuotePopup);
+    }
+    
+    // Event listeners for product quote buttons
     productQuoteBtns.forEach(btn => {
         btn.addEventListener('click', openQuotePopup);
     });
     
-    // Close popup listeners
-    if (popupOverlay) popupOverlay.addEventListener('click', closeQuotePopup);
-    if (popupClose) popupClose.addEventListener('click', closeQuotePopup);
+    // Close popup when clicking overlay or close button
+    if (popupOverlay) {
+        popupOverlay.addEventListener('click', closeQuotePopup);
+    }
     
+    if (popupClose) {
+        popupClose.addEventListener('click', closeQuotePopup);
+    }
+    
+    // Close popup with Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && quotePopup.classList.contains('active')) {
             closeQuotePopup();
         }
     });
     
-    // ✅ FIXED: REMOVED JS form submission handling
-    // Let FormSubmit handle everything
+    // Form submission handling
+    if (quoteForm) {
+        // Client-side validation before FormSubmit submission
+        quoteForm.addEventListener('submit', function(e) {
+            // Validate form before submission
+            if (!validateQuoteForm()) {
+                e.preventDefault(); // Prevent FormSubmit submission if validation fails
+                return;
+            }
+            
+            // Change button text to indicate submission is in progress
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+                submitBtn.disabled = true;
+                
+                // Restore button after 10 seconds (in case something goes wrong)
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 10000);
+            }
+            
+            // Show redirecting message
+            showPopupMessage('<i class="fas fa-spinner fa-spin"></i> Redirecting to calculator...', 'info');
+            
+            // FormSubmit will handle the redirect via _next parameter
+            // No need to close popup here - FormSubmit will redirect
+        });
+    }
     
-    // Phone number formatting only (no submission interference)
+    // Quote form validation
+    function validateQuoteForm() {
+        const name = document.getElementById('popupName').value.trim();
+        const email = document.getElementById('popupEmail').value.trim();
+        const phone = document.getElementById('popupPhone').value.trim();
+        const location = document.getElementById('popupLocation').value.trim();
+        const consent = document.getElementById('popupConsent').checked;
+        
+        // Validation
+        if (!name) {
+            showPopupMessage('Please enter your full name.', 'error');
+            return false;
+        }
+        
+        if (!email || !isValidEmail(email)) {
+            showPopupMessage('Please enter a valid email address.', 'error');
+            return false;
+        }
+        
+        const cleanedPhone = phone.replace(/\D/g, '');
+        if (!phone || cleanedPhone.length < 10) {
+            showPopupMessage('Please enter a valid phone number with at least 10 digits.', 'error');
+            return false;
+        }
+        
+        if (!location) {
+            showPopupMessage('Please enter your location in Bangalore.', 'error');
+            return false;
+        }
+        
+        if (!consent) {
+            showPopupMessage('Please agree to receive quotes and updates.', 'error');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Email validation helper
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    // Show popup message
+    function showPopupMessage(text, type) {
+        if (!popupMessageDisplay) return;
+        
+        popupMessageDisplay.innerHTML = text;
+        popupMessageDisplay.className = `form-message ${type}`;
+        popupMessageDisplay.style.display = 'block';
+        
+        // Scroll to message
+        popupMessageDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Hide message after 5 seconds for errors
+        if (type === 'error') {
+            setTimeout(() => {
+                popupMessageDisplay.style.opacity = '0';
+                setTimeout(() => {
+                    popupMessageDisplay.style.opacity = '1';
+                    popupMessageDisplay.style.display = 'none';
+                }, 500);
+            }, 5000);
+        }
+    }
+    
+    // Phone number formatting
     const phoneInput = document.getElementById('popupPhone');
     if (phoneInput) {
         phoneInput.addEventListener('input', function(e) {
@@ -136,7 +303,7 @@ function initQuotePopup() {
     }
 }
 
-// Navigation - UNCHANGED
+// Navigation
 function initNavigation() {
     const mobileToggle = document.getElementById('mobileToggle');
     const mainNav = document.getElementById('mainNav');
@@ -144,15 +311,19 @@ function initNavigation() {
     const dropdowns = document.querySelectorAll('.dropdown');
     const header = document.getElementById('mainHeader');
     
+    // Mobile menu toggle
     if (mobileToggle) {
         mobileToggle.addEventListener('click', function() {
             this.classList.toggle('active');
             if (mainNav) mainNav.classList.toggle('active');
+            
+            // Toggle aria-expanded attribute for accessibility
             const isExpanded = this.getAttribute('aria-expanded') === 'true' || false;
             this.setAttribute('aria-expanded', !isExpanded);
         });
     }
     
+    // Toggle dropdown on mobile
     dropdowns.forEach(dropdown => {
         const toggle = dropdown.querySelector('.dropdown-toggle');
         if (toggle) {
@@ -165,6 +336,7 @@ function initNavigation() {
         }
     });
     
+    // Close mobile menu when clicking on a link
     navLinks.forEach(link => {
         link.addEventListener('click', function() {
             if (window.innerWidth <= 768) {
@@ -173,11 +345,14 @@ function initNavigation() {
                     mobileToggle.setAttribute('aria-expanded', 'false');
                 }
                 if (mainNav) mainNav.classList.remove('active');
+                
+                // Close all dropdowns
                 dropdowns.forEach(d => d.classList.remove('active'));
             }
         });
     });
     
+    // Sticky header on scroll
     if (header) {
         window.addEventListener('scroll', function() {
             if (window.scrollY > 100) {
@@ -185,10 +360,13 @@ function initNavigation() {
             } else {
                 header.classList.remove('scrolled');
             }
+            
+            // Update active nav link based on scroll position
             updateActiveNavLink();
         });
     }
     
+    // Close mobile menu when clicking outside
     document.addEventListener('click', function(event) {
         const isClickInsideNav = mainNav && mainNav.contains(event.target);
         const isClickOnToggle = mobileToggle && mobileToggle.contains(event.target);
@@ -199,10 +377,13 @@ function initNavigation() {
                 mobileToggle.setAttribute('aria-expanded', 'false');
             }
             mainNav.classList.remove('active');
+            
+            // Close all dropdowns
             dropdowns.forEach(d => d.classList.remove('active'));
         }
     });
     
+    // Handle window resize
     window.addEventListener('resize', function() {
         if (window.innerWidth > 768) {
             if (mobileToggle) {
@@ -210,15 +391,19 @@ function initNavigation() {
                 mobileToggle.setAttribute('aria-expanded', 'false');
             }
             if (mainNav) mainNav.classList.remove('active');
+            
+            // Close all dropdowns
             dropdowns.forEach(d => d.classList.remove('active'));
         }
     });
 }
 
+// Initialize dropdowns
 function initDropdowns() {
     const specToggles = document.querySelectorAll('.spec-toggle');
     const featuresToggles = document.querySelectorAll('.features-toggle');
     
+    // Specification dropdowns
     specToggles.forEach(toggle => {
         toggle.addEventListener('click', function() {
             const content = this.nextElementSibling;
@@ -234,6 +419,7 @@ function initDropdowns() {
         });
     });
     
+    // Features dropdowns
     featuresToggles.forEach(toggle => {
         toggle.addEventListener('click', function() {
             const content = this.nextElementSibling;
@@ -250,6 +436,7 @@ function initDropdowns() {
     });
 }
 
+// Product filtering
 function initProductFilter() {
     const categoryBtns = document.querySelectorAll('.category-filter-btn');
     const productCards = document.querySelectorAll('.product-card');
@@ -258,7 +445,10 @@ function initProductFilter() {
     
     categoryBtns.forEach(btn => {
         btn.addEventListener('click', function() {
+            // Remove active class from all buttons
             categoryBtns.forEach(b => b.classList.remove('active'));
+            
+            // Add active class to clicked button
             this.classList.add('active');
             
             const selectedCategory = this.getAttribute('data-category');
@@ -268,6 +458,7 @@ function initProductFilter() {
                 
                 if (selectedCategory === 'all' || selectedCategory === cardCategory) {
                     card.style.display = 'flex';
+                    // Add animation
                     card.style.animation = 'none';
                     setTimeout(() => {
                         card.style.animation = 'cardAppear 0.6s ease forwards';
@@ -280,12 +471,16 @@ function initProductFilter() {
     });
 }
 
+// Smooth scrolling for anchor links
 function initSmoothScrolling() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        // Skip external links
         if (anchor.getAttribute('href').includes('.html')) return;
         
         anchor.addEventListener('click', function(e) {
             const targetId = this.getAttribute('href');
+            
+            // Skip if it's just "#"
             if (targetId === '#') return;
             
             const targetElement = document.querySelector(targetId);
@@ -305,6 +500,7 @@ function initSmoothScrolling() {
     });
 }
 
+// Update active navigation link based on scroll position
 function updateActiveNavLink() {
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-link');
@@ -331,6 +527,7 @@ function updateActiveNavLink() {
     });
 }
 
+// Scroll Animations
 function initScrollAnimations() {
     const animateElements = document.querySelectorAll('.product-card, .feature-card, .service-card, .industry-card, .tech-item, .trust-card');
     
@@ -351,16 +548,19 @@ function initScrollAnimations() {
     });
 }
 
+// Trigger initial animations after loading
 function triggerInitialAnimations() {
     const heroContent = document.querySelector('.hero-content');
     if (heroContent) {
         heroContent.style.animation = 'fadeInUp 1s ease';
     }
     
+    // Trigger scroll animations immediately for elements in viewport
     const event = new Event('scroll');
     window.dispatchEvent(event);
 }
 
+// Initialize card animations
 function initCardAnimations() {
     const cards = document.querySelectorAll('.product-card, .feature-card, .service-card, .industry-card, .trust-card');
     
@@ -369,12 +569,14 @@ function initCardAnimations() {
     });
 }
 
+// Progress Bars
 function initProgressBars() {
     const progressFills = document.querySelectorAll('.progress-fill');
     
     progressFills.forEach(progress => {
         const width = progress.getAttribute('data-width');
         
+        // Animate progress bars when in viewport
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -390,6 +592,7 @@ function initProgressBars() {
     });
 }
 
+// Loading Messages
 function initLoadingMessages() {
     const messages = [
         { text: "🛗 Preparing a smooth ride for you…", icon: "fas fa-elevator" },
@@ -407,6 +610,7 @@ function initLoadingMessages() {
     
     if (!messagesTrack) return;
     
+    // Duplicate messages for seamless animation
     const duplicatedMessages = [...messages, ...messages];
     
     duplicatedMessages.forEach(message => {
@@ -420,6 +624,7 @@ function initLoadingMessages() {
     });
 }
 
+// Start loading messages animation
 function startLoadingMessages() {
     const messagesTrack = document.getElementById('loadingMessagesTrack');
     if (messagesTrack) {
@@ -427,6 +632,7 @@ function startLoadingMessages() {
     }
 }
 
+// Initialize Client Logos
 function initClientLogos() {
     const bangaloreCompanies = [
         "Prestige Group", "Brigade Group", "Sobha Limited", "Godrej Properties",
@@ -442,6 +648,7 @@ function initClientLogos() {
     
     if (!logosTrack) return;
     
+    // Duplicate logos for seamless animation
     const duplicatedLogos = [...bangaloreCompanies, ...bangaloreCompanies];
     
     duplicatedLogos.forEach(company => {
@@ -457,6 +664,7 @@ function initClientLogos() {
     });
 }
 
+// Start client logos animation
 function startClientLogosAnimation() {
     const logosTrack = document.getElementById('clientLogosTrack');
     if (logosTrack) {
@@ -464,16 +672,111 @@ function startClientLogosAnimation() {
     }
 }
 
-// ✅ FIXED: Contact Form - FormSubmit Compatible
+// Contact Form
 function initContactForm() {
     const contactForm = document.getElementById('contactForm');
+    const formMessage = document.getElementById('formMessage');
     
     if (!contactForm) return;
     
-    // ✅ FIXED: REMOVED JS form submission handling
-    // Let FormSubmit handle everything
+    contactForm.addEventListener('submit', function(e) {
+        // Validate form before submission
+        if (!validateContactForm()) {
+            e.preventDefault(); // Prevent FormSubmit submission if validation fails
+            return;
+        }
+        
+        // Change button text to indicate submission is in progress
+        const submitBtn = this.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            submitBtn.disabled = true;
+            
+            // Restore button after 10 seconds (in case something goes wrong)
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 10000);
+        }
+        
+        // FormSubmit will handle the submission and autoresponse
+        // Show sending message
+        showContactFormMessage('<i class="fas fa-spinner fa-spin"></i> Sending your message...', 'info');
+        
+        // FormSubmit will redirect to thank-you.html via _next parameter
+    });
     
-    // Phone number formatting only
+    // Contact form validation
+    function validateContactForm() {
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const location = document.getElementById('location').value.trim();
+        const message = document.getElementById('message').value.trim();
+        
+        // Simple validation
+        if (!name) {
+            showContactFormMessage('Please enter your full name.', 'error');
+            return false;
+        }
+        
+        if (!email || !isValidEmail(email)) {
+            showContactFormMessage('Please enter a valid email address.', 'error');
+            return false;
+        }
+        
+        const cleanedPhone = phone.replace(/\D/g, '');
+        if (!phone || cleanedPhone.length < 10) {
+            showContactFormMessage('Please enter a valid phone number with at least 10 digits.', 'error');
+            return false;
+        }
+        
+        if (!location) {
+            showContactFormMessage('Please enter your location in Bangalore.', 'error');
+            return false;
+        }
+        
+        if (!message) {
+            showContactFormMessage('Please enter your message.', 'error');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Email validation helper
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    // Show contact form message
+    function showContactFormMessage(text, type) {
+        if (!formMessage) return;
+        
+        formMessage.innerHTML = text;
+        formMessage.className = `form-message ${type}`;
+        formMessage.style.display = 'block';
+        
+        // Scroll to form message
+        formMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Hide message after 5 seconds for errors
+        if (type === 'error') {
+            setTimeout(() => {
+                formMessage.style.opacity = '0';
+                setTimeout(() => {
+                    formMessage.style.opacity = '1';
+                    formMessage.style.display = 'none';
+                }, 500);
+            }, 5000);
+        }
+    }
+}
+
+// Add phone number formatting for contact form
+document.addEventListener('DOMContentLoaded', function() {
     const phoneInput = document.getElementById('phone');
     if (phoneInput) {
         phoneInput.addEventListener('input', function(e) {
@@ -490,4 +793,4 @@ function initContactForm() {
             e.target.value = value;
         });
     }
-}
+});
