@@ -1,4 +1,5 @@
 // script.js - Updated with FormSubmit Integration and Redirect Fix
+// Complete with proper form handling for both Quote and Contact forms
 
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -48,6 +49,9 @@ function initApp() {
     
     // Initialize quote popup
     initQuotePopup();
+    
+    // Initialize phone number formatting
+    initPhoneFormatting();
 }
 
 // Set form tracking data
@@ -129,7 +133,8 @@ function initQuotePopup() {
         
         // Focus on first input
         setTimeout(() => {
-            document.getElementById('popupName').focus();
+            const nameInput = document.getElementById('popupName');
+            if (nameInput) nameInput.focus();
         }, 300);
     }
     
@@ -184,7 +189,7 @@ function initQuotePopup() {
         }
     });
     
-    // Form submission handling - UPDATED FOR REDIRECT
+    // Form submission handling - UPDATED FOR REDIRECT FIX
     if (quoteForm) {
         quoteForm.addEventListener('submit', function(e) {
             // Validate form before submission
@@ -199,10 +204,23 @@ function initQuotePopup() {
             
             // Optional: Show a "Submitting..." message
             if (popupMessageDisplay) {
-                popupMessageDisplay.textContent = 'Submitting your request...';
+                popupMessageDisplay.textContent = 'Submitting your request... Please wait.';
                 popupMessageDisplay.className = 'form-message';
                 popupMessageDisplay.style.display = 'block';
+                
+                // Scroll to message for better visibility
+                popupMessageDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
+            
+            // Disable submit button to prevent double submission
+            const submitBtn = quoteForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            }
+            
+            // FormSubmit will handle the redirect automatically
+            // Do NOT add e.preventDefault() for successful validation
         });
     }
     
@@ -278,21 +296,31 @@ function initQuotePopup() {
         }
     }
     
-    // Phone number formatting
-    const phoneInput = document.getElementById('popupPhone');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', function(e) {
+    // Phone number formatting for popup
+    const popupPhoneInput = document.getElementById('popupPhone');
+    if (popupPhoneInput) {
+        popupPhoneInput.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             
+            // Remove leading 91 if present
             if (value.startsWith('91')) {
                 value = value.substring(2);
             }
             
+            // Format with +91 prefix and limit to 10 digits
             if (value.length > 0) {
                 value = '+91 ' + value.substring(0, 10);
             }
             
             e.target.value = value;
+        });
+        
+        // Ensure format on blur if user typed without +91
+        popupPhoneInput.addEventListener('blur', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 10 && !e.target.value.startsWith('+91')) {
+                e.target.value = '+91 ' + value.substring(0, 10);
+            }
         });
     }
 }
@@ -686,10 +714,23 @@ function initContactForm() {
         
         // Optional: Show a "Sending..." message
         if (formMessage) {
-            formMessage.textContent = 'Sending your message...';
+            formMessage.textContent = 'Sending your message... Please wait.';
             formMessage.className = 'form-message';
             formMessage.style.display = 'block';
+            
+            // Scroll to message for better visibility
+            formMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+        
+        // Disable submit button to prevent double submission
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        }
+        
+        // FormSubmit will handle the redirect automatically
+        // Do NOT add e.preventDefault() for successful validation
     });
     
     // Contact form validation
@@ -762,11 +803,40 @@ function initContactForm() {
     }
 }
 
-// Add phone number formatting for contact form
-document.addEventListener('DOMContentLoaded', function() {
-    const phoneInput = document.getElementById('phone');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', function(e) {
+// Phone number formatting for all phone inputs
+function initPhoneFormatting() {
+    // Format phone input in contact form
+    const contactPhoneInput = document.getElementById('phone');
+    if (contactPhoneInput) {
+        contactPhoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            // Remove leading 91 if present
+            if (value.startsWith('91')) {
+                value = value.substring(2);
+            }
+            
+            // Format with +91 prefix and limit to 10 digits
+            if (value.length > 0) {
+                value = '+91 ' + value.substring(0, 10);
+            }
+            
+            e.target.value = value;
+        });
+        
+        // Ensure format on blur if user typed without +91
+        contactPhoneInput.addEventListener('blur', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 10 && !e.target.value.startsWith('+91')) {
+                e.target.value = '+91 ' + value.substring(0, 10);
+            }
+        });
+    }
+    
+    // Format any other phone inputs that might exist
+    const otherPhoneInputs = document.querySelectorAll('input[type="tel"]:not(#popupPhone):not(#phone)');
+    otherPhoneInputs.forEach(input => {
+        input.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             
             if (value.startsWith('91')) {
@@ -779,33 +849,47 @@ document.addEventListener('DOMContentLoaded', function() {
             
             e.target.value = value;
         });
-    }
+    });
+}
+
+// Initialize phone formatting on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    initPhoneFormatting();
 });
 
-// Optional: Add a function to check if redirect pages exist
+// Optional: Add a function to check if redirect pages exist (for development)
 function checkRedirectPages() {
     // This function can be used to verify that calculator.html and thank-you.html exist
     // You can call it during development to ensure the redirect will work
+    console.log('Checking redirect pages...');
+    
     fetch('calculator.html')
         .then(response => {
             if (!response.ok) {
-                console.warn('calculator.html not found. Redirect will fail.');
+                console.warn('⚠️ calculator.html not found. FormSubmit redirect will fail.');
+                console.warn('Please create calculator.html in the same directory as index.html');
+            } else {
+                console.log('✅ calculator.html found and accessible');
             }
         })
         .catch(() => {
-            console.warn('calculator.html not found. Redirect will fail.');
+            console.warn('⚠️ calculator.html not found. FormSubmit redirect will fail.');
         });
     
     fetch('thank-you.html')
         .then(response => {
             if (!response.ok) {
-                console.warn('thank-you.html not found. Redirect will fail.');
+                console.warn('⚠️ thank-you.html not found. FormSubmit redirect will fail.');
+                console.warn('Please create thank-you.html in the same directory as index.html');
+            } else {
+                console.log('✅ thank-you.html found and accessible');
             }
         })
         .catch(() => {
-            console.warn('thank-you.html not found. Redirect will fail.');
+            console.warn('⚠️ thank-you.html not found. FormSubmit redirect will fail.');
         });
 }
 
-// Call this function during development
-// checkRedirectPages();
+// Call this function during development to verify files exist
+// Uncomment the line below to check redirect pages on load
+// window.addEventListener('load', checkRedirectPages);
