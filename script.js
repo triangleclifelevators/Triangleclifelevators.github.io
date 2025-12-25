@@ -1,4 +1,4 @@
-// script.js
+// script.js - Updated with FormSubmit Integration
 
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function initApp() {
     // Set current year in footer
     document.getElementById('currentYear').textContent = new Date().getFullYear();
+    
+    // Set page URLs and timestamps for forms
+    setFormTrackingData();
     
     // Initialize loading screen
     initLoadingScreen();
@@ -42,9 +45,30 @@ function initApp() {
     
     // Initialize client logos
     initClientLogos();
+    
+    // Initialize quote popup
+    initQuotePopup();
 }
 
-// Loading Screen - Updated
+// Set form tracking data
+function setFormTrackingData() {
+    const currentUrl = window.location.href;
+    const timestamp = new Date().toISOString();
+    
+    // Set for quote popup
+    const pageUrlField = document.getElementById('pageUrl');
+    const timestampField = document.getElementById('timestamp');
+    if (pageUrlField) pageUrlField.value = currentUrl;
+    if (timestampField) timestampField.value = timestamp;
+    
+    // Set for contact form
+    const contactPageUrl = document.getElementById('contactPageUrl');
+    const contactTimestamp = document.getElementById('contactTimestamp');
+    if (contactPageUrl) contactPageUrl.value = currentUrl;
+    if (contactTimestamp) contactTimestamp.value = timestamp;
+}
+
+// Loading Screen
 function initLoadingScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     const progressFill = document.querySelector('.progress-fill-loading');
@@ -83,6 +107,190 @@ function initLoadingScreen() {
     }, 100);
 }
 
+// Initialize Quote Popup
+function initQuotePopup() {
+    const quotePopup = document.getElementById('quotePopup');
+    const popupOverlay = document.getElementById('popupOverlay');
+    const popupClose = document.getElementById('popupClose');
+    const quoteForm = document.getElementById('quoteForm');
+    const popupMessageDisplay = document.getElementById('popupMessageDisplay');
+    
+    // Get all quote buttons
+    const quotePopupBtn = document.getElementById('quotePopupBtn');
+    const heroQuoteBtn = document.getElementById('heroQuoteBtn');
+    const aboutQuoteBtn = document.getElementById('aboutQuoteBtn');
+    const ctaQuoteBtn = document.getElementById('ctaQuoteBtn');
+    const productQuoteBtns = document.querySelectorAll('.product-quote-btn');
+    
+    // Open popup function
+    function openQuotePopup() {
+        quotePopup.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Focus on first input
+        setTimeout(() => {
+            document.getElementById('popupName').focus();
+        }, 300);
+    }
+    
+    // Close popup function
+    function closeQuotePopup() {
+        quotePopup.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        
+        // Clear any existing messages
+        if (popupMessageDisplay) {
+            popupMessageDisplay.textContent = '';
+            popupMessageDisplay.className = 'form-message';
+            popupMessageDisplay.style.display = 'none';
+        }
+    }
+    
+    // Event listeners for opening popup
+    if (quotePopupBtn) {
+        quotePopupBtn.addEventListener('click', openQuotePopup);
+    }
+    
+    if (heroQuoteBtn) {
+        heroQuoteBtn.addEventListener('click', openQuotePopup);
+    }
+    
+    if (aboutQuoteBtn) {
+        aboutQuoteBtn.addEventListener('click', openQuotePopup);
+    }
+    
+    if (ctaQuoteBtn) {
+        ctaQuoteBtn.addEventListener('click', openQuotePopup);
+    }
+    
+    // Event listeners for product quote buttons
+    productQuoteBtns.forEach(btn => {
+        btn.addEventListener('click', openQuotePopup);
+    });
+    
+    // Close popup when clicking overlay or close button
+    if (popupOverlay) {
+        popupOverlay.addEventListener('click', closeQuotePopup);
+    }
+    
+    if (popupClose) {
+        popupClose.addEventListener('click', closeQuotePopup);
+    }
+    
+    // Close popup with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && quotePopup.classList.contains('active')) {
+            closeQuotePopup();
+        }
+    });
+    
+    // Form submission handling
+    if (quoteForm) {
+        // Client-side validation before FormSubmit submission
+        quoteForm.addEventListener('submit', function(e) {
+            // Validate form before submission
+            if (!validateQuoteForm()) {
+                e.preventDefault(); // Prevent FormSubmit submission if validation fails
+                return;
+            }
+            
+            // If validation passes, FormSubmit will handle the submission
+            // Show success message
+            showPopupMessage('Thank you! Your quote request has been submitted successfully.', 'success');
+            
+            // Close popup after delay
+            setTimeout(() => {
+                closeQuotePopup();
+            }, 2000);
+        });
+    }
+    
+    // Quote form validation
+    function validateQuoteForm() {
+        const name = document.getElementById('popupName').value.trim();
+        const email = document.getElementById('popupEmail').value.trim();
+        const phone = document.getElementById('popupPhone').value.trim();
+        const location = document.getElementById('popupLocation').value.trim();
+        const consent = document.getElementById('popupConsent').checked;
+        
+        // Validation
+        if (!name) {
+            showPopupMessage('Please enter your full name.', 'error');
+            return false;
+        }
+        
+        if (!email || !isValidEmail(email)) {
+            showPopupMessage('Please enter a valid email address.', 'error');
+            return false;
+        }
+        
+        const cleanedPhone = phone.replace(/\D/g, '');
+        if (!phone || cleanedPhone.length < 10) {
+            showPopupMessage('Please enter a valid phone number with at least 10 digits.', 'error');
+            return false;
+        }
+        
+        if (!location) {
+            showPopupMessage('Please enter your location in Bangalore.', 'error');
+            return false;
+        }
+        
+        if (!consent) {
+            showPopupMessage('Please agree to receive quotes and updates.', 'error');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Email validation helper
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    // Show popup message
+    function showPopupMessage(text, type) {
+        if (!popupMessageDisplay) return;
+        
+        popupMessageDisplay.textContent = text;
+        popupMessageDisplay.className = `form-message ${type}`;
+        popupMessageDisplay.style.display = 'block';
+        
+        // Scroll to message
+        popupMessageDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Hide message after 5 seconds
+        if (type === 'error') {
+            setTimeout(() => {
+                popupMessageDisplay.style.opacity = '0';
+                setTimeout(() => {
+                    popupMessageDisplay.style.opacity = '1';
+                    popupMessageDisplay.style.display = 'none';
+                }, 500);
+            }, 5000);
+        }
+    }
+    
+    // Phone number formatting
+    const phoneInput = document.getElementById('popupPhone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.startsWith('91')) {
+                value = value.substring(2);
+            }
+            
+            if (value.length > 0) {
+                value = '+91 ' + value.substring(0, 10);
+            }
+            
+            e.target.value = value;
+        });
+    }
+}
+
 // Navigation
 function initNavigation() {
     const mobileToggle = document.getElementById('mobileToggle');
@@ -90,17 +298,18 @@ function initNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
     const dropdowns = document.querySelectorAll('.dropdown');
     const header = document.getElementById('mainHeader');
-    const quoteCalculatorBtn = document.getElementById('quoteCalculatorBtn');
     
     // Mobile menu toggle
-    mobileToggle.addEventListener('click', function() {
-        this.classList.toggle('active');
-        mainNav.classList.toggle('active');
-        
-        // Toggle aria-expanded attribute for accessibility
-        const isExpanded = this.getAttribute('aria-expanded') === 'true' || false;
-        this.setAttribute('aria-expanded', !isExpanded);
-    });
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            if (mainNav) mainNav.classList.toggle('active');
+            
+            // Toggle aria-expanded attribute for accessibility
+            const isExpanded = this.getAttribute('aria-expanded') === 'true' || false;
+            this.setAttribute('aria-expanded', !isExpanded);
+        });
+    }
     
     // Toggle dropdown on mobile
     dropdowns.forEach(dropdown => {
@@ -119,76 +328,43 @@ function initNavigation() {
     navLinks.forEach(link => {
         link.addEventListener('click', function() {
             if (window.innerWidth <= 768) {
-                mobileToggle.classList.remove('active');
-                mainNav.classList.remove('active');
-                mobileToggle.setAttribute('aria-expanded', 'false');
+                if (mobileToggle) {
+                    mobileToggle.classList.remove('active');
+                    mobileToggle.setAttribute('aria-expanded', 'false');
+                }
+                if (mainNav) mainNav.classList.remove('active');
                 
                 // Close all dropdowns
                 dropdowns.forEach(d => d.classList.remove('active'));
             }
         });
-    });
-    
-    // Quote calculator button click - redirect to calculator page
-    if (quoteCalculatorBtn) {
-        quoteCalculatorBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = 'calculator.html';
-            
-            // Close mobile menu if open
-            if (window.innerWidth <= 768) {
-                mobileToggle.classList.remove('active');
-                mainNav.classList.remove('active');
-                mobileToggle.setAttribute('aria-expanded', 'false');
-                
-                // Close all dropdowns
-                dropdowns.forEach(d => d.classList.remove('active'));
-            }
-        });
-    }
-    
-    // Update CTA buttons to link to calculator.html
-    const ctaButtons = document.querySelectorAll('.btn-primary.btn-large.pulse-animation');
-    ctaButtons.forEach(button => {
-        if (button.textContent.includes('Get Free Quote') || button.textContent.includes('Get Quote')) {
-            button.href = 'calculator.html';
-            // Update icon to calculator
-            const icon = button.querySelector('i');
-            if (icon && icon.classList.contains('fa-quote-left')) {
-                icon.className = 'fas fa-calculator';
-            }
-        }
-    });
-    
-    // Update "Enquire Now" buttons in product cards
-    const enquireButtons = document.querySelectorAll('.product-card .btn-outline.hover-grow');
-    enquireButtons.forEach(button => {
-        if (button.textContent.includes('Enquire Now') || button.textContent.includes('Get Quote')) {
-            button.href = 'calculator.html';
-        }
     });
     
     // Sticky header on scroll
-    window.addEventListener('scroll', function() {
-        if (window.scrollY > 100) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
-        }
-        
-        // Update active nav link based on scroll position
-        updateActiveNavLink();
-    });
+    if (header) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+            
+            // Update active nav link based on scroll position
+            updateActiveNavLink();
+        });
+    }
     
     // Close mobile menu when clicking outside
     document.addEventListener('click', function(event) {
-        const isClickInsideNav = mainNav.contains(event.target);
-        const isClickOnToggle = mobileToggle.contains(event.target);
+        const isClickInsideNav = mainNav && mainNav.contains(event.target);
+        const isClickOnToggle = mobileToggle && mobileToggle.contains(event.target);
         
-        if (!isClickInsideNav && !isClickOnToggle && mainNav.classList.contains('active')) {
-            mobileToggle.classList.remove('active');
+        if (!isClickInsideNav && !isClickOnToggle && mainNav && mainNav.classList.contains('active')) {
+            if (mobileToggle) {
+                mobileToggle.classList.remove('active');
+                mobileToggle.setAttribute('aria-expanded', 'false');
+            }
             mainNav.classList.remove('active');
-            mobileToggle.setAttribute('aria-expanded', 'false');
             
             // Close all dropdowns
             dropdowns.forEach(d => d.classList.remove('active'));
@@ -198,9 +374,11 @@ function initNavigation() {
     // Handle window resize
     window.addEventListener('resize', function() {
         if (window.innerWidth > 768) {
-            mobileToggle.classList.remove('active');
-            mainNav.classList.remove('active');
-            mobileToggle.setAttribute('aria-expanded', 'false');
+            if (mobileToggle) {
+                mobileToggle.classList.remove('active');
+                mobileToggle.setAttribute('aria-expanded', 'false');
+            }
+            if (mainNav) mainNav.classList.remove('active');
             
             // Close all dropdowns
             dropdowns.forEach(d => d.classList.remove('active'));
@@ -246,7 +424,7 @@ function initDropdowns() {
     });
 }
 
-// Product filtering - Updated
+// Product filtering
 function initProductFilter() {
     const categoryBtns = document.querySelectorAll('.category-filter-btn');
     const productCards = document.querySelectorAll('.product-card');
@@ -298,7 +476,7 @@ function initSmoothScrolling() {
                 e.preventDefault();
                 
                 const header = document.getElementById('mainHeader');
-                const headerHeight = header.offsetHeight;
+                const headerHeight = header ? header.offsetHeight : 0;
                 const targetPosition = targetElement.offsetTop - headerHeight;
                 
                 window.scrollTo({
@@ -316,11 +494,12 @@ function updateActiveNavLink() {
     const navLinks = document.querySelectorAll('.nav-link');
     
     let currentSectionId = '';
+    const header = document.getElementById('mainHeader');
+    const headerHeight = header ? header.offsetHeight : 0;
     
     sections.forEach(section => {
         const sectionTop = section.offsetTop;
         const sectionHeight = section.clientHeight;
-        const headerHeight = document.getElementById('mainHeader').offsetHeight;
         
         if (window.scrollY >= sectionTop - headerHeight - 100 &&
             window.scrollY < sectionTop + sectionHeight - headerHeight - 100) {
@@ -489,42 +668,65 @@ function initContactForm() {
     if (!contactForm) return;
     
     contactForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+        // Validate form before submission
+        if (!validateContactForm()) {
+            e.preventDefault(); // Prevent FormSubmit submission if validation fails
+            return;
+        }
         
-        // Get form values
+        // If validation passes, FormSubmit will handle the submission
+        // Show success message
+        showContactFormMessage('Thank you for your message! Our elevator expert in Bangalore will contact you within 24 hours.', 'success');
+        
+        // Reset form after submission
+        setTimeout(() => {
+            contactForm.reset();
+            document.getElementById('phone').value = '+91 ';
+        }, 1000);
+        
+        // Scroll to form message
+        if (formMessage) {
+            formMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+    
+    // Contact form validation
+    function validateContactForm() {
         const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
         const phone = document.getElementById('phone').value.trim();
         const location = document.getElementById('location').value.trim();
-        const interest = document.getElementById('interest').value;
         const message = document.getElementById('message').value.trim();
         
         // Simple validation
-        if (!name || !email || !phone || !location || !message) {
-            showFormMessage('Please fill in all required fields.', 'error');
-            return;
+        if (!name) {
+            showContactFormMessage('Please enter your full name.', 'error');
+            return false;
         }
         
-        if (!isValidEmail(email)) {
-            showFormMessage('Please enter a valid email address.', 'error');
-            return;
+        if (!email || !isValidEmail(email)) {
+            showContactFormMessage('Please enter a valid email address.', 'error');
+            return false;
         }
         
-        if (!isValidPhone(phone)) {
-            showFormMessage('Please enter a valid phone number.', 'error');
-            return;
+        const cleanedPhone = phone.replace(/\D/g, '');
+        if (!phone || cleanedPhone.length < 10) {
+            showContactFormMessage('Please enter a valid phone number with at least 10 digits.', 'error');
+            return false;
         }
         
-        // In a real application, you would send the data to a server here
-        // For this demo, we'll simulate a successful submission
-        showFormMessage('Thank you for your message! Our elevator expert in Bangalore will contact you within 24 hours.', 'success');
+        if (!location) {
+            showContactFormMessage('Please enter your location in Bangalore.', 'error');
+            return false;
+        }
         
-        // Reset form
-        contactForm.reset();
+        if (!message) {
+            showContactFormMessage('Please enter your message.', 'error');
+            return false;
+        }
         
-        // Scroll to form message
-        formMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
+        return true;
+    }
     
     // Email validation helper
     function isValidEmail(email) {
@@ -532,30 +734,28 @@ function initContactForm() {
         return emailRegex.test(email);
     }
     
-    // Phone validation helper
-    function isValidPhone(phone) {
-        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-        return phoneRegex.test(phone.replace(/\D/g, ''));
-    }
-    
-    // Show form message
-    function showFormMessage(text, type) {
+    // Show contact form message
+    function showContactFormMessage(text, type) {
+        if (!formMessage) return;
+        
         formMessage.textContent = text;
         formMessage.className = `form-message ${type}`;
         formMessage.style.display = 'block';
         
-        // Hide message after 5 seconds
-        setTimeout(() => {
-            formMessage.style.opacity = '0';
+        // Hide message after 5 seconds for errors
+        if (type === 'error') {
             setTimeout(() => {
-                formMessage.style.opacity = '1';
-                formMessage.style.display = 'none';
-            }, 500);
-        }, 5000);
+                formMessage.style.opacity = '0';
+                setTimeout(() => {
+                    formMessage.style.opacity = '1';
+                    formMessage.style.display = 'none';
+                }, 500);
+            }, 5000);
+        }
     }
 }
 
-// Add phone number formatting
+// Add phone number formatting for contact form
 document.addEventListener('DOMContentLoaded', function() {
     const phoneInput = document.getElementById('phone');
     if (phoneInput) {
@@ -567,7 +767,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (value.length > 0) {
-                value = '+91 ' + value;
+                value = '+91 ' + value.substring(0, 10);
             }
             
             e.target.value = value;
