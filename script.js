@@ -1,5 +1,4 @@
-// script.js - Updated with FormSubmit Integration
-// Fixed: Removed success handling to allow FormSubmit redirect
+// script.js - Updated with FormSubmit Integration and Redirect Fix
 
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -108,7 +107,7 @@ function initLoadingScreen() {
     }, 100);
 }
 
-// Initialize Quote Popup
+// Initialize Quote Popup - UPDATED FOR REDIRECT FIX
 function initQuotePopup() {
     const quotePopup = document.getElementById('quotePopup');
     const popupOverlay = document.getElementById('popupOverlay');
@@ -185,9 +184,8 @@ function initQuotePopup() {
         }
     });
     
-    // Form submission handling
+    // Form submission handling - UPDATED FOR REDIRECT
     if (quoteForm) {
-        // Client-side validation before FormSubmit submission
         quoteForm.addEventListener('submit', function(e) {
             // Validate form before submission
             if (!validateQuoteForm()) {
@@ -195,25 +193,16 @@ function initQuotePopup() {
                 return;
             }
             
-            // Change button text to indicate submission is in progress
-            const submitBtn = this.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-                submitBtn.disabled = true;
-                
-                // Restore button after 10 seconds (in case something goes wrong)
-                setTimeout(() => {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                }, 10000);
+            // ✅ IMPORTANT: Do NOT show success message or close popup here
+            // Let FormSubmit handle the submission and redirect naturally
+            // FormSubmit will automatically redirect to calculator.html based on the _next parameter
+            
+            // Optional: Show a "Submitting..." message
+            if (popupMessageDisplay) {
+                popupMessageDisplay.textContent = 'Submitting your request...';
+                popupMessageDisplay.className = 'form-message';
+                popupMessageDisplay.style.display = 'block';
             }
-            
-            // Show redirecting message
-            showPopupMessage('<i class="fas fa-spinner fa-spin"></i> Redirecting to calculator...', 'info');
-            
-            // FormSubmit will handle the redirect via _next parameter
-            // No need to close popup here - FormSubmit will redirect
         });
     }
     
@@ -224,6 +213,11 @@ function initQuotePopup() {
         const phone = document.getElementById('popupPhone').value.trim();
         const location = document.getElementById('popupLocation').value.trim();
         const consent = document.getElementById('popupConsent').checked;
+        
+        // Clear previous messages
+        if (popupMessageDisplay) {
+            popupMessageDisplay.style.display = 'none';
+        }
         
         // Validation
         if (!name) {
@@ -265,7 +259,7 @@ function initQuotePopup() {
     function showPopupMessage(text, type) {
         if (!popupMessageDisplay) return;
         
-        popupMessageDisplay.innerHTML = text;
+        popupMessageDisplay.textContent = text;
         popupMessageDisplay.className = `form-message ${type}`;
         popupMessageDisplay.style.display = 'block';
         
@@ -672,7 +666,7 @@ function startClientLogosAnimation() {
     }
 }
 
-// Contact Form
+// Contact Form - UPDATED FOR REDIRECT FIX
 function initContactForm() {
     const contactForm = document.getElementById('contactForm');
     const formMessage = document.getElementById('formMessage');
@@ -686,25 +680,16 @@ function initContactForm() {
             return;
         }
         
-        // Change button text to indicate submission is in progress
-        const submitBtn = this.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-            submitBtn.disabled = true;
-            
-            // Restore button after 10 seconds (in case something goes wrong)
-            setTimeout(() => {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }, 10000);
+        // ✅ IMPORTANT: Do NOT show success message or reset form here
+        // Let FormSubmit handle the submission and redirect naturally
+        // FormSubmit will automatically redirect to thank-you.html based on the _next parameter
+        
+        // Optional: Show a "Sending..." message
+        if (formMessage) {
+            formMessage.textContent = 'Sending your message...';
+            formMessage.className = 'form-message';
+            formMessage.style.display = 'block';
         }
-        
-        // FormSubmit will handle the submission and autoresponse
-        // Show sending message
-        showContactFormMessage('<i class="fas fa-spinner fa-spin"></i> Sending your message...', 'info');
-        
-        // FormSubmit will redirect to thank-you.html via _next parameter
     });
     
     // Contact form validation
@@ -714,6 +699,11 @@ function initContactForm() {
         const phone = document.getElementById('phone').value.trim();
         const location = document.getElementById('location').value.trim();
         const message = document.getElementById('message').value.trim();
+        
+        // Clear previous messages
+        if (formMessage) {
+            formMessage.style.display = 'none';
+        }
         
         // Simple validation
         if (!name) {
@@ -755,12 +745,9 @@ function initContactForm() {
     function showContactFormMessage(text, type) {
         if (!formMessage) return;
         
-        formMessage.innerHTML = text;
+        formMessage.textContent = text;
         formMessage.className = `form-message ${type}`;
         formMessage.style.display = 'block';
-        
-        // Scroll to form message
-        formMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
         // Hide message after 5 seconds for errors
         if (type === 'error') {
@@ -794,3 +781,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Optional: Add a function to check if redirect pages exist
+function checkRedirectPages() {
+    // This function can be used to verify that calculator.html and thank-you.html exist
+    // You can call it during development to ensure the redirect will work
+    fetch('calculator.html')
+        .then(response => {
+            if (!response.ok) {
+                console.warn('calculator.html not found. Redirect will fail.');
+            }
+        })
+        .catch(() => {
+            console.warn('calculator.html not found. Redirect will fail.');
+        });
+    
+    fetch('thank-you.html')
+        .then(response => {
+            if (!response.ok) {
+                console.warn('thank-you.html not found. Redirect will fail.');
+            }
+        })
+        .catch(() => {
+            console.warn('thank-you.html not found. Redirect will fail.');
+        });
+}
+
+// Call this function during development
+// checkRedirectPages();
