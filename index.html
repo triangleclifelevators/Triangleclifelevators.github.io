@@ -50,11 +50,12 @@
             
            <!-- FormSubmit Form - FIXED for Compatibility -->
 <form id="quoteForm" class="popup-form" action="https://formsubmit.co/triangleclifelevators2000@gmail.com" method="POST">
-    <!-- FormSubmit Hidden Fields - FIXED -->
+    <!-- FormSubmit Hidden Fields -->
     <input type="hidden" name="_subject" value="📞 New Quote Request - Triangle Clif Elevators">
     <input type="hidden" name="_template" value="table">
     <input type="hidden" name="_captcha" value="false">
-   <input type="hidden" name="_next" value="https://triangleclifelevators.com/calculator.html">
+    <!-- ✅ CHANGED: Use relative path for _next -->
+    <input type="hidden" name="_next" value="calculator.html">
     <input type="hidden" name="_autoresponse" value="Thank you for contacting Triangle Clif Elevators! Our elevator expert will call you within 30 minutes to discuss your requirements and provide a customized quote. For immediate assistance, call +91 70197 56807. Looking forward to elevating your space!">
     <input type="hidden" name="_cc" value="sales@triangleclif.com">
                 
@@ -1362,14 +1363,15 @@
                         
                         <div class="contact-content">
                             <div class="contact-form-container">
-                               <form id="quoteForm" class="popup-form" action="https://formsubmit.co/triangleclifelevators2000@gmail.com" method="POST">
-                                    <!-- FormSubmit Hidden Fields -->
-                                    <input type="hidden" name="_subject" value="📧 New Contact Form Submission - Triangle Clif Elevators">
-                                    <input type="hidden" name="_template" value="table">
-                                    <input type="hidden" name="_captcha" value="false">
-                                    <input type="hidden" name="_next" value="https://triangleclif.com/calculator.html">
-                                    <input type="hidden" name="_autoresponse" value="Thank you for contacting Triangle Clif Elevators! We have received your message and our team will get back to you within 24 hours. For immediate assistance, call +91 70197 56807.">
-                                    <input type="hidden" name="_cc" value="info@triangleclif.com">
+                               <form id="contactForm" class="contact-form" action="https://formsubmit.co/triangleclifelevators2000@gmail.com" method="POST">
+    <!-- FormSubmit Hidden Fields -->
+    <input type="hidden" name="_subject" value="📧 New Contact Form Submission - Triangle Clif Elevators">
+    <input type="hidden" name="_template" value="table">
+    <input type="hidden" name="_captcha" value="false">
+    <!-- ✅ CHANGED: Use relative path for _next -->
+    <input type="hidden" name="_next" value="thank-you.html">
+    <input type="hidden" name="_autoresponse" value="Thank you for contacting Triangle Clif Elevators! We have received your message and our team will get back to you within 24 hours. For immediate assistance, call +91 70197 56807.">
+    <input type="hidden" name="_cc" value="info@triangleclif.com">
                                     
                                     <!-- Honeypot field -->
                                     <input type="text" name="_honey" style="display:none">
@@ -1625,6 +1627,7 @@
             <script src="script.js"></script>
         </body>
         </html>
+
 
 
 
