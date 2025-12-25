@@ -1,4 +1,4 @@
-// script.js - Updated with FormSubmit Integration and Redirect Fix
+// script.js - Updated with FormSubmit Integration and Fixed Form Validation
 // Complete with proper form handling for both Quote and Contact forms
 
 // Wait for DOM to be fully loaded
@@ -111,7 +111,7 @@ function initLoadingScreen() {
     }, 100);
 }
 
-// Initialize Quote Popup - UPDATED FOR REDIRECT FIX
+// Initialize Quote Popup - FIXED VERSION
 function initQuotePopup() {
     const quotePopup = document.getElementById('quotePopup');
     const popupOverlay = document.getElementById('popupOverlay');
@@ -189,20 +189,71 @@ function initQuotePopup() {
         }
     });
     
-    // Form submission handling - UPDATED FOR REDIRECT FIX
+    // Form submission handling - FIXED VERSION
     if (quoteForm) {
         quoteForm.addEventListener('submit', function(e) {
-            // Validate form before submission
-            if (!validateQuoteForm()) {
-                e.preventDefault(); // Prevent FormSubmit submission if validation fails
+            // First, check if all required fields are filled
+            const requiredFields = quoteForm.querySelectorAll('[required]');
+            let allValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    allValid = false;
+                    // Add visual feedback for empty required field
+                    field.style.borderColor = '#d32f2f';
+                    setTimeout(() => {
+                        field.style.borderColor = '';
+                    }, 2000);
+                }
+            });
+            
+            if (!allValid) {
+                e.preventDefault();
+                showPopupMessage('Please fill in all required fields marked with *', 'error');
                 return;
             }
             
-            // ✅ IMPORTANT: Do NOT show success message or close popup here
-            // Let FormSubmit handle the submission and redirect naturally
-            // FormSubmit will automatically redirect to calculator.html based on the _next parameter
+            // Validate email format if email field exists
+            const emailField = document.getElementById('popupEmail');
+            if (emailField && emailField.value.trim()) {
+                const email = emailField.value.trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    e.preventDefault();
+                    showPopupMessage('Please enter a valid email address.', 'error');
+                    emailField.style.borderColor = '#d32f2f';
+                    setTimeout(() => {
+                        emailField.style.borderColor = '';
+                    }, 2000);
+                    return;
+                }
+            }
             
-            // Optional: Show a "Submitting..." message
+            // Validate phone number format
+            const phoneField = document.getElementById('popupPhone');
+            if (phoneField && phoneField.value.trim()) {
+                const phone = phoneField.value.trim();
+                const cleanedPhone = phone.replace(/\D/g, '');
+                if (cleanedPhone.length < 10) {
+                    e.preventDefault();
+                    showPopupMessage('Please enter a valid phone number with at least 10 digits.', 'error');
+                    phoneField.style.borderColor = '#d32f2f';
+                    setTimeout(() => {
+                        phoneField.style.borderColor = '';
+                    }, 2000);
+                    return;
+                }
+            }
+            
+            // Check consent checkbox
+            const consentCheckbox = document.getElementById('popupConsent');
+            if (consentCheckbox && !consentCheckbox.checked) {
+                e.preventDefault();
+                showPopupMessage('Please agree to receive quotes and updates.', 'error');
+                return;
+            }
+            
+            // If all validations pass, show loading state
             if (popupMessageDisplay) {
                 popupMessageDisplay.textContent = 'Submitting your request... Please wait.';
                 popupMessageDisplay.className = 'form-message';
@@ -219,58 +270,9 @@ function initQuotePopup() {
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
             }
             
-            // FormSubmit will handle the redirect automatically
-            // Do NOT add e.preventDefault() for successful validation
+            // FormSubmit will handle the submission and redirect
+            // No need to prevent default if all validations pass
         });
-    }
-    
-    // Quote form validation
-    function validateQuoteForm() {
-        const name = document.getElementById('popupName').value.trim();
-        const email = document.getElementById('popupEmail').value.trim();
-        const phone = document.getElementById('popupPhone').value.trim();
-        const location = document.getElementById('popupLocation').value.trim();
-        const consent = document.getElementById('popupConsent').checked;
-        
-        // Clear previous messages
-        if (popupMessageDisplay) {
-            popupMessageDisplay.style.display = 'none';
-        }
-        
-        // Validation
-        if (!name) {
-            showPopupMessage('Please enter your full name.', 'error');
-            return false;
-        }
-        
-        if (!email || !isValidEmail(email)) {
-            showPopupMessage('Please enter a valid email address.', 'error');
-            return false;
-        }
-        
-        const cleanedPhone = phone.replace(/\D/g, '');
-        if (!phone || cleanedPhone.length < 10) {
-            showPopupMessage('Please enter a valid phone number with at least 10 digits.', 'error');
-            return false;
-        }
-        
-        if (!location) {
-            showPopupMessage('Please enter your location in Bangalore.', 'error');
-            return false;
-        }
-        
-        if (!consent) {
-            showPopupMessage('Please agree to receive quotes and updates.', 'error');
-            return false;
-        }
-        
-        return true;
-    }
-    
-    // Email validation helper
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
     }
     
     // Show popup message
@@ -694,7 +696,7 @@ function startClientLogosAnimation() {
     }
 }
 
-// Contact Form - UPDATED FOR REDIRECT FIX
+// Contact Form - FIXED VERSION
 function initContactForm() {
     const contactForm = document.getElementById('contactForm');
     const formMessage = document.getElementById('formMessage');
@@ -702,17 +704,60 @@ function initContactForm() {
     if (!contactForm) return;
     
     contactForm.addEventListener('submit', function(e) {
-        // Validate form before submission
-        if (!validateContactForm()) {
-            e.preventDefault(); // Prevent FormSubmit submission if validation fails
+        // First, check if all required fields are filled
+        const requiredFields = contactForm.querySelectorAll('[required]');
+        let allValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                allValid = false;
+                // Add visual feedback for empty required field
+                field.style.borderColor = '#d32f2f';
+                setTimeout(() => {
+                    field.style.borderColor = '';
+                }, 2000);
+            }
+        });
+        
+        if (!allValid) {
+            e.preventDefault();
+            showContactFormMessage('Please fill in all required fields marked with *', 'error');
             return;
         }
         
-        // ✅ IMPORTANT: Do NOT show success message or reset form here
-        // Let FormSubmit handle the submission and redirect naturally
-        // FormSubmit will automatically redirect to thank-you.html based on the _next parameter
+        // Validate email format
+        const emailField = document.getElementById('email');
+        if (emailField && emailField.value.trim()) {
+            const email = emailField.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                showContactFormMessage('Please enter a valid email address.', 'error');
+                emailField.style.borderColor = '#d32f2f';
+                setTimeout(() => {
+                    emailField.style.borderColor = '';
+                }, 2000);
+                return;
+            }
+        }
         
-        // Optional: Show a "Sending..." message
+        // Validate phone number format
+        const phoneField = document.getElementById('phone');
+        if (phoneField && phoneField.value.trim()) {
+            const phone = phoneField.value.trim();
+            const cleanedPhone = phone.replace(/\D/g, '');
+            if (cleanedPhone.length < 10) {
+                e.preventDefault();
+                showContactFormMessage('Please enter a valid phone number with at least 10 digits.', 'error');
+                phoneField.style.borderColor = '#d32f2f';
+                setTimeout(() => {
+                    phoneField.style.borderColor = '';
+                }, 2000);
+                return;
+            }
+        }
+        
+        // If all validations pass, show loading state
         if (formMessage) {
             formMessage.textContent = 'Sending your message... Please wait.';
             formMessage.className = 'form-message';
@@ -729,58 +774,9 @@ function initContactForm() {
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
         }
         
-        // FormSubmit will handle the redirect automatically
-        // Do NOT add e.preventDefault() for successful validation
+        // FormSubmit will handle the submission and redirect
+        // No need to prevent default if all validations pass
     });
-    
-    // Contact form validation
-    function validateContactForm() {
-        const name = document.getElementById('name').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const location = document.getElementById('location').value.trim();
-        const message = document.getElementById('message').value.trim();
-        
-        // Clear previous messages
-        if (formMessage) {
-            formMessage.style.display = 'none';
-        }
-        
-        // Simple validation
-        if (!name) {
-            showContactFormMessage('Please enter your full name.', 'error');
-            return false;
-        }
-        
-        if (!email || !isValidEmail(email)) {
-            showContactFormMessage('Please enter a valid email address.', 'error');
-            return false;
-        }
-        
-        const cleanedPhone = phone.replace(/\D/g, '');
-        if (!phone || cleanedPhone.length < 10) {
-            showContactFormMessage('Please enter a valid phone number with at least 10 digits.', 'error');
-            return false;
-        }
-        
-        if (!location) {
-            showContactFormMessage('Please enter your location in Bangalore.', 'error');
-            return false;
-        }
-        
-        if (!message) {
-            showContactFormMessage('Please enter your message.', 'error');
-            return false;
-        }
-        
-        return true;
-    }
-    
-    // Email validation helper
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
     
     // Show contact form message
     function showContactFormMessage(text, type) {
